@@ -29,6 +29,7 @@ logger.addHandler(handler)
 
 bot_client = Bot(token=TELEGRAM_TOKEN)
 
+
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
