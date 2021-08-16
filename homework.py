@@ -27,6 +27,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(levelname)s, %(message)s'))
 logger.addHandler(handler)
 
+bot_client = Bot(token=TELEGRAM_TOKEN)
 
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
@@ -41,15 +42,13 @@ def parse_homework_status(homework):
     elif homework_status == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
     elif homework_status == 'approved':
-        verdict = ('Ревьюеру всё понравилось, '
-                   'можно приступать к следующему уроку.')
+        verdict = ('Ревьюеру всё понравилось, работа зачтена!')
     elif verdict == 'unknown_status':
         logger.error('Ошибка, неизвестный статус')
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
 def get_homeworks(current_timestamp):
-    bot_client = Bot(token=TELEGRAM_TOKEN)
     if current_timestamp is None:
         current_timestamp = int(time.time())
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
@@ -79,13 +78,12 @@ def get_homeworks(current_timestamp):
     return YP_request
 
 
-def send_message(message, bot_client):
+def send_message(message):
     return bot_client.send_message(chat_id=CHAT_ID, text=message)
 
 
 def main():
     logger.debug('logging is started')
-    bot_client = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
 
     while True:
