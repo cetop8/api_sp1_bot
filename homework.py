@@ -41,7 +41,7 @@ def parse_homework_status(homework):
     elif homework_status == 'reviewing':
         verdict = 'Проект на ревью.'
     elif homework_status == 'rejected':
-        verdict = 'К сожалению в работе нашлись ошибки.'
+        verdict = 'К сожалению, в работе нашлись ошибки.'
     elif homework_status == 'approved':
         verdict = ('Ревьюеру всё понравилось, работа зачтена!')
     elif verdict == 'unknown_status':
