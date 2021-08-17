@@ -9,13 +9,9 @@ from telegram import Bot
 
 load_dotenv()
 
-PRAKTIKUM_TOKEN = os.getenv("PRAKTIKUM_TOKEN")
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='bot.log',
+    filename=os.path.join(os.path.dirname(__file__), 'bot.log'),
     filemode='w',
     datefmt='%Y-%m-%d, %H:%M:%S',
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s'
@@ -27,7 +23,17 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(levelname)s, %(message)s'))
 logger.addHandler(handler)
 
+try:
+    PRAKTIKUM_TOKEN = os.environ("PRAKTIKUM_TOKEN")
+    TELEGRAM_TOKEN = os.environ('TELEGRAM_TOKEN')
+    CHAT_ID = os.environ('TELEGRAM_CHAT_ID')
+except KeyError:
+    logger.error('Ошибка в переменных токенов')
+
 bot_client = Bot(token=TELEGRAM_TOKEN)
+headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
+URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
+time.sleep(300)
 
 
 def parse_homework_status(homework):
@@ -38,23 +44,21 @@ def parse_homework_status(homework):
         logger.error('homework_name is None OR homework_status is None')
         return (f'{homework_name}: '
                 f'homework_name is None OR homework_status is None')
-    elif homework_status == 'reviewing':
-        verdict = 'Проект на ревью.'
-    elif homework_status == 'rejected':
-        verdict = 'К сожалению, в работе нашлись ошибки.'
-    elif homework_status == 'approved':
-        verdict = ('Ревьюеру всё понравилось, работа зачтена!')
-    elif verdict == 'unknown_status':
+    if verdict == 'unknown_status':
         logger.error('Ошибка, неизвестный статус')
-    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+    statuses = {
+        'reviewing': 'Проект на ревью.',
+        'rejected': 'К сожалению, в работе нашлись ошибки.',
+        'approved': 'Ревьюеру всё понравилось, работа зачтена!',
+        'unknown_status': 'Ошибка, неизвестный статус'
+    }
+    return f'У вас проверили работу "{homework_name}"!\n\n{statuses[homework_status]}'
 
 
 def get_homeworks(current_timestamp):
     if current_timestamp is None:
         current_timestamp = int(time.time())
-    headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     params = {'from_date': current_timestamp}
-    URL = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
 
     try:
         homework_statuses = requests.get(
@@ -65,14 +69,14 @@ def get_homeworks(current_timestamp):
     except requests.exceptions.RequestException:
         logger.error('Request exception occurred', exc_info=True)
         send_message('Request exception occurred', bot_client)
-        return {}
+        raise('Ошибка в реквесте при запросе к апи практикума')
 
     try:
         YP_request = homework_statuses.json()
     except json.decoder.JSONDecodeError:
         logger.error('JSONDecodeError occurred', exc_info=True)
         send_message('JSONDecodeError occurred', bot_client)
-        return {}
+        raise('Ошибка при расшифровке json-файла')
     if 'error' in YP_request:
         logger.error(YP_request['error'])
         send_message(YP_request['error'], bot_client)
@@ -80,7 +84,10 @@ def get_homeworks(current_timestamp):
 
 
 def send_message(message):
-    return bot_client.send_message(chat_id=CHAT_ID, text=message)
+    try:
+        return bot_client.send_message(chat_id=CHAT_ID, text=message)
+    except:
+        raise('Ошибка на стороне Telegram')
 
 
 def main():
@@ -91,12 +98,11 @@ def main():
         try:
             new_homework = get_homeworks(current_timestamp)
             if new_homework.get('homeworks'):
-                last_hw = new_homework.get('homeworks')[0]
+                last_hw = new_homework('homeworks')[0]
                 send_message((parse_homework_status(last_hw)), bot_client)
                 logger.info('Message was sent')
-            current_timestamp = new_homework.get('current_date',
+            current_timestamp = new_homework('current_date',
                                                  current_timestamp)
-            time.sleep(300)
 
         except requests.exceptions.RequestException:
             logger.error('Exception occurred', exc_info=True)
