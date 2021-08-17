@@ -52,7 +52,8 @@ def parse_homework_status(homework):
         'approved': 'Ревьюеру всё понравилось, работа зачтена!',
         'unknown_status': 'Ошибка, неизвестный статус'
     }
-    return f'У вас проверили работу "{homework_name}"!\n\n{statuses[homework_status]}'
+    return f'У вас проверили работу "{homework_name}"!' \
+        f'{statuses[homework_status]}'
 
 
 def get_homeworks(current_timestamp):
@@ -86,7 +87,7 @@ def get_homeworks(current_timestamp):
 def send_message(message):
     try:
         return bot_client.send_message(chat_id=CHAT_ID, text=message)
-    except:
+    except Bot.ResponseError:
         raise('Ошибка на стороне Telegram')
 
 
@@ -102,7 +103,7 @@ def main():
                 send_message((parse_homework_status(last_hw)), bot_client)
                 logger.info('Message was sent')
             current_timestamp = new_homework('current_date',
-                                                 current_timestamp)
+                                             current_timestamp)
 
         except requests.exceptions.RequestException:
             logger.error('Exception occurred', exc_info=True)
