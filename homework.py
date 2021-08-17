@@ -24,9 +24,9 @@ handler.setFormatter(logging.Formatter('%(levelname)s, %(message)s'))
 logger.addHandler(handler)
 
 try:
-    PRAKTIKUM_TOKEN = os.environ("PRAKTIKUM_TOKEN")
-    TELEGRAM_TOKEN = os.environ('TELEGRAM_TOKEN')
-    CHAT_ID = os.environ('TELEGRAM_CHAT_ID')
+    PRAKTIKUM_TOKEN = os.environ['PRAKTIKUM_TOKEN']
+    TELEGRAM_TOKEN = os.environ['TELEGRAM_TOKEN']
+    CHAT_ID = os.environ['TELEGRAM_CHAT_ID']
 except KeyError:
     logger.error('Ошибка в переменных токенов')
 
