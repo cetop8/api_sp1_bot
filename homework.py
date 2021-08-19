@@ -67,18 +67,18 @@ def get_homeworks(current_timestamp):
         )
     except requests.exceptions.RequestException:
         logger.error('Request exception occurred', exc_info=True)
-        send_message('Request exception occurred', BOT_CLIENT)
+        send_message('Request exception occurred')
         raise('Ошибка в реквесте при запросе к апи практикума')
 
     try:
         YP_request = homework_statuses.json()
     except json.decoder.JSONDecodeError:
         logger.error('JSONDecodeError occurred', exc_info=True)
-        send_message('JSONDecodeError occurred', BOT_CLIENT)
+        send_message('JSONDecodeError occurred')
         raise('Ошибка при расшифровке json-файла')
     if 'error' in YP_request:
         logger.error(YP_request['error'])
-        send_message(YP_request['error'], BOT_CLIENT)
+        send_message(YP_request['error'])
     return YP_request
 
 
@@ -98,15 +98,16 @@ def main():
             new_homework = get_homeworks(current_timestamp)
             if new_homework.get('homeworks'):
                 last_hw = new_homework('homeworks')[0]
-                send_message((parse_homework_status(last_hw)), BOT_CLIENT)
+                send_message((parse_homework_status(last_hw)))
                 logger.info('Message was sent')
+                current_timestamp = int(time.time())
         except requests.exceptions.RequestException:
             logger.error('Exception occurred', exc_info=True)
-            send_message('Exception occurred', BOT_CLIENT)
+            send_message('Exception occurred')
             time.sleep(5)
         except AttributeError:
             logger.error('AttributeError', exc_info=True)
-            send_message('AttributeError occurred', BOT_CLIENT)
+            send_message('AttributeError occurred')
             time.sleep(5)
 
 
