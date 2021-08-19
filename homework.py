@@ -5,7 +5,7 @@ import time
 
 import requests
 from dotenv import load_dotenv
-from telegram import Bot
+from telegram import Bot, error
 
 load_dotenv()
 
@@ -85,7 +85,7 @@ def get_homeworks(current_timestamp):
 def send_message(message):
     try:
         return BOT_CLIENT.send_message(chat_id=CHAT_ID, text=message)
-    except Bot.ResponseError:
+    except error.TelegramError:
         raise SystemExit('Ошибка на стороне телеграма')
 
 
