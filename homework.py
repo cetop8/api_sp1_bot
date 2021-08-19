@@ -100,9 +100,6 @@ def main():
                 last_hw = new_homework('homeworks')[0]
                 send_message((parse_homework_status(last_hw)), BOT_CLIENT)
                 logger.info('Message was sent')
-            current_timestamp = new_homework('current_date',
-                                             current_timestamp)
-
         except requests.exceptions.RequestException:
             logger.error('Exception occurred', exc_info=True)
             send_message('Exception occurred', BOT_CLIENT)
