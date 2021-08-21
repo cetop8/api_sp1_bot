@@ -39,19 +39,19 @@ STATUSES = {
     'approved': 'Ревьюеру всё понравилось, работа зачтена!',
 }
 SLEEP_TIME_EXCEPTIONS = 5
-SLEEP_TIME_MAIN = 300
+SLEEP_TIME_MAIN = 60 * 5
 
 
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
-    verdict = STATUSES[homework_status]
     if homework_name is None or homework_status is None:
         logger.error('homework_name is None OR homework_status is None')
         raise Exception('homework_name is None OR homework_status is None')
     if homework_status not in STATUSES:
         logger.error('Ошибка, неизвестный статус')
         raise Exception('Ошибка, неизвестный статус')
+    verdict = STATUSES[homework_status]
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
