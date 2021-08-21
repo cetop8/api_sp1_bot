@@ -38,18 +38,19 @@ STATUSES = {
     'rejected': 'К сожалению, в работе нашлись ошибки.',
     'approved': 'Ревьюеру всё понравилось, работа зачтена!',
 }
-time.sleep(300)
+SLEEP_TIME_EXCEPTIONS = 5
+SLEEP_TIME_MAIN = 300
 
 
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
-    if homework_status not in STATUSES:
-        logger.error('Ошибка, неизвестный статус')
-        raise Exception('Ошибка, неизвестный статус')
     if homework_name is None or homework_status is None:
         logger.error('homework_name is None OR homework_status is None')
         raise Exception('homework_name is None OR homework_status is None')
+    if homework_status not in STATUSES:
+        logger.error('Ошибка, неизвестный статус')
+        raise Exception('Ошибка, неизвестный статус')
     return (f'У вас проверили работу "{homework_name} "!'
             f'{STATUSES[homework_status]}')
 
@@ -79,6 +80,7 @@ def get_homeworks(current_timestamp):
     if 'error' in YP_request:
         logger.error(YP_request['error'])
         send_message(YP_request['error'])
+        raise Exception('Ошибка при открытии json с ЯП')
     return YP_request
 
 
@@ -100,15 +102,16 @@ def main():
                 last_hw = new_homework('homeworks')[0]
                 send_message((parse_homework_status(last_hw)))
                 logger.info('Message was sent')
-                current_timestamp = int(time.time())
+            current_timestamp = int(time.time())
+            time.sleep(SLEEP_TIME_MAIN)
         except requests.exceptions.RequestException:
             logger.error('Exception occurred', exc_info=True)
             send_message('Exception occurred')
-            time.sleep(5)
+            time.sleep(SLEEP_TIME_EXCEPTIONS)
         except AttributeError:
             logger.error('AttributeError', exc_info=True)
             send_message('AttributeError occurred')
-            time.sleep(5)
+            time.sleep(SLEEP_TIME_EXCEPTIONS)
 
 
 if __name__ == '__main__':
